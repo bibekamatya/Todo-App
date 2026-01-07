@@ -1,7 +1,13 @@
-export default function Home() {
-  return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-3xl font-bold">Todo App</h1>
-    </main>
-  );
+import { getTodos } from "@/app/actions/todoActions";
+import TodoList from "@/components/TodoList";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+
+export default async function Home() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  const todos = await getTodos();
+
+  return <TodoList initialTodos={todos} user={session.user} />;
 }
