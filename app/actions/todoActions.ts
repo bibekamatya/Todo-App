@@ -12,7 +12,7 @@ const COLLECTION_NAME = "todos";
 export async function getTodos(
   filter?: "all" | "active" | "completed",
   page: number = 1,
-  limit: number = 6
+  limit: number = 8
 ) {
   const session = await auth();
   if (!session?.user?.email)
