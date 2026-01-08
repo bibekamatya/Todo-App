@@ -1,18 +1,39 @@
 "use client";
-import { useState, FormEvent } from "react";
+import { createTodo, getTodos } from "@/app/actions/todoActions";
+import { FormProps } from "@/app/types";
+import { useState, FormEvent, startTransition, useRef, useEffect } from "react";
+import toast from "react-hot-toast";
 
-interface FormProps {
-  onSubmit: (data: { name: string; description: string }) => void;
-}
-
-const Form = ({ onSubmit }: FormProps) => {
+const Form = ({
+  setTodos,
+  setOpen,
+  filter,
+  currentPage,
+  setCurrentPage,
+  setTotalPages,
+}: FormProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    onSubmit({ name, description });
+
+    setOpen(false);
+
+    startTransition(async () => {
+      await createTodo(name, description);
+      const refreshed = await getTodos(filter, currentPage);
+      setTodos(refreshed.todos);
+      setCurrentPage(refreshed.page);
+      setTotalPages(refreshed.totalPages);
+      toast.success("Task added successfully");
+    });
     setName("");
     setDescription("");
   };
@@ -22,6 +43,7 @@ const Form = ({ onSubmit }: FormProps) => {
       <div className="flex flex-col gap-1">
         <label className="text-sm">Task Name</label>
         <input
+          ref={inputRef}
           value={name}
           onChange={(e) => setName(e.target.value)}
           type="text"
